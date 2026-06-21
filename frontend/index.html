@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Annadata — AI Crop Advisor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="grain-overlay"></div>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 6C20 6 12 14 12 22C12 26.4183 15.5817 30 20 30C24.4183 30 28 26.4183 28 22C28 14 20 6 20 6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M20 30V35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M14 35H26" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span class="brand-name">Annadata</span>
+    </div>
+    <p class="brand-tagline">AI Crop Advisor</p>
+  </div>
+</header>
+
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-inner">
+      <p class="hero-eyebrow">Soil to Harvest, Predicted</p>
+      <h1 class="hero-title">Tell the field<br>what to grow next.</h1>
+      <p class="hero-sub">Enter your soil nutrients and weather conditions. Get a data-backed crop recommendation, then forecast the yield before you plant a single seed.</p>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-num" id="stat-accuracy">93.6%</span>
+          <span class="stat-label">recommendation accuracy</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num" id="stat-r2">0.998</span>
+          <span class="stat-label">yield model R²</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num">40</span>
+          <span class="stat-label">crops recognized</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- THE FIELD ROW (signature connecting element) -->
+  <div class="field-row" aria-hidden="true">
+    <svg viewBox="0 0 1200 60" preserveAspectRatio="none" class="furrow-svg">
+      <path d="M0,30 Q150,5 300,30 T600,30 T900,30 T1200,30" stroke="currentColor" stroke-width="1.5" fill="none" stroke-dasharray="2,10" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <!-- STAGE 1: RECOMMENDATION -->
+  <section class="stage" id="stage-recommend">
+    <div class="stage-inner">
+      <div class="stage-label">
+        <span class="stage-tag">Stage One</span>
+        <h2 class="stage-title">What should I plant?</h2>
+        <p class="stage-desc">Give the soil's nutrient profile and the season's weather. An XGBoost classifier trained on 18,000+ field records will suggest the three best-matched crops.</p>
+      </div>
+
+      <div class="panel">
+        <form id="recommend-form" class="input-grid">
+          <div class="field">
+            <label for="N">Nitrogen (N)<span class="unit">kg/ha</span></label>
+            <input type="number" id="N" name="N" step="any" value="90" required>
+          </div>
+          <div class="field">
+            <label for="P">Phosphorus (P)<span class="unit">kg/ha</span></label>
+            <input type="number" id="P" name="P" step="any" value="42" required>
+          </div>
+          <div class="field">
+            <label for="K">Potassium (K)<span class="unit">kg/ha</span></label>
+            <input type="number" id="K" name="K" step="any" value="43" required>
+          </div>
+          <div class="field">
+            <label for="pH">Soil pH</label>
+            <input type="number" id="pH" name="pH" step="any" value="6.5" required>
+          </div>
+          <div class="field">
+            <label for="rainfall">Rainfall<span class="unit">mm</span></label>
+            <input type="number" id="rainfall" name="rainfall" step="any" value="200" required>
+          </div>
+          <div class="field">
+            <label for="temperature">Temperature<span class="unit">°C</span></label>
+            <input type="number" id="temperature" name="temperature" step="any" value="25" required>
+          </div>
+
+          <button type="submit" class="btn-primary" id="recommend-btn">
+            <span>Recommend Crops</span>
+            <svg viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </form>
+
+        <div class="results-panel" id="recommend-results" hidden>
+          <p class="results-label">Top matches for these conditions</p>
+          <div class="crop-cards" id="crop-cards"></div>
+          <p class="results-hint">Select a crop above to forecast its expected yield in Stage Two.</p>
+        </div>
+
+        <div class="error-banner" id="recommend-error" hidden></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="field-row field-row--reverse" aria-hidden="true">
+    <svg viewBox="0 0 1200 60" preserveAspectRatio="none" class="furrow-svg">
+      <path d="M0,30 Q150,55 300,30 T600,30 T900,30 T1200,30" stroke="currentColor" stroke-width="1.5" fill="none" stroke-dasharray="2,10" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <!-- STAGE 2: YIELD PREDICTION -->
+  <section class="stage stage--alt" id="stage-yield">
+    <div class="stage-inner">
+      <div class="stage-label">
+        <span class="stage-tag">Stage Two</span>
+        <h2 class="stage-title">What will the harvest bring?</h2>
+        <p class="stage-desc">Add field-level detail — region, irrigation, fertilizer use — and an XGBoost regressor forecasts tons per hectare, trained on 10,000 harvest records.</p>
+      </div>
+
+      <div class="panel">
+        <div class="selected-crop-banner" id="selected-crop-banner" hidden>
+          <span class="banner-label">Forecasting for</span>
+          <span class="banner-crop" id="banner-crop-name">—</span>
+          <button class="banner-clear" id="clear-crop-btn" type="button" title="Choose a different crop">Change crop</button>
+        </div>
+
+        <div class="no-crop-notice" id="no-crop-notice">
+          <p>Pick a recommended crop in Stage One, or choose one manually below.</p>
+          <select id="manual-crop-select" class="manual-select">
+            <option value="">— Select a crop manually —</option>
+          </select>
+        </div>
+
+        <form id="yield-form" class="input-grid input-grid--wide" hidden>
+          <div class="field">
+            <label for="y-N">Nitrogen (N)</label>
+            <input type="number" id="y-N" step="any" value="132" required>
+          </div>
+          <div class="field">
+            <label for="y-P">Phosphorus (P)</label>
+            <input type="number" id="y-P" step="any" value="62" required>
+          </div>
+          <div class="field">
+            <label for="y-K">Potassium (K)</label>
+            <input type="number" id="y-K" step="any" value="22" required>
+          </div>
+          <div class="field">
+            <label for="Soil_pH">Soil pH</label>
+            <input type="number" id="Soil_pH" step="any" value="6.35" required>
+          </div>
+          <div class="field">
+            <label for="Soil_Moisture">Soil Moisture<span class="unit">%</span></label>
+            <input type="number" id="Soil_Moisture" step="any" value="59.78" required>
+          </div>
+          <div class="field">
+            <label for="Soil_Type">Soil Type</label>
+            <select id="Soil_Type" required></select>
+          </div>
+          <div class="field">
+            <label for="Organic_Carbon">Organic Carbon<span class="unit">%</span></label>
+            <input type="number" id="Organic_Carbon" step="any" value="0.43" required>
+          </div>
+          <div class="field">
+            <label for="Temperature">Temperature<span class="unit">°C</span></label>
+            <input type="number" id="Temperature" step="any" value="22.97" required>
+          </div>
+          <div class="field">
+            <label for="Humidity">Humidity<span class="unit">%</span></label>
+            <input type="number" id="Humidity" step="any" value="53.89" required>
+          </div>
+          <div class="field">
+            <label for="Rainfall">Rainfall<span class="unit">mm</span></label>
+            <input type="number" id="Rainfall" step="any" value="1305.68" required>
+          </div>
+          <div class="field">
+            <label for="Sunlight_Hours">Sunlight<span class="unit">hrs/day</span></label>
+            <input type="number" id="Sunlight_Hours" step="any" value="7.73" required>
+          </div>
+          <div class="field">
+            <label for="Wind_Speed">Wind Speed<span class="unit">km/h</span></label>
+            <input type="number" id="Wind_Speed" step="any" value="15.96" required>
+          </div>
+          <div class="field">
+            <label for="Region">Region</label>
+            <select id="Region" required></select>
+          </div>
+          <div class="field">
+            <label for="Altitude">Altitude<span class="unit">m</span></label>
+            <input type="number" id="Altitude" step="any" value="36" required>
+          </div>
+          <div class="field">
+            <label for="Season">Season</label>
+            <select id="Season" required></select>
+          </div>
+          <div class="field">
+            <label for="Irrigation_Type">Irrigation</label>
+            <select id="Irrigation_Type" required></select>
+          </div>
+          <div class="field">
+            <label for="Fertilizer_Used">Fertilizer Used<span class="unit">kg/ha</span></label>
+            <input type="number" id="Fertilizer_Used" step="any" value="223.48" required>
+          </div>
+          <div class="field">
+            <label for="Pesticide_Used">Pesticide Used<span class="unit">L/ha</span></label>
+            <input type="number" id="Pesticide_Used" step="any" value="23.36" required>
+          </div>
+
+          <button type="submit" class="btn-primary btn-harvest" id="yield-btn">
+            <span>Forecast Yield</span>
+            <svg viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </form>
+
+        <div class="yield-result" id="yield-result" hidden>
+          <div class="yield-figure">
+            <span class="yield-number" id="yield-number">0</span>
+            <span class="yield-unit">tons / hectare</span>
+          </div>
+          <div class="yield-risk" id="yield-risk"></div>
+        </div>
+
+        <div class="error-banner" id="yield-error" hidden></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- METHODOLOGY -->
+  <section class="methodology">
+    <div class="methodology-inner">
+      <span class="stage-tag">Under the Hood</span>
+      <h2 class="method-title">Built on two trained models</h2>
+      <div class="method-grid">
+        <div class="method-card">
+          <h3>Crop Recommendation</h3>
+          <p class="method-model">XGBoost Classifier</p>
+          <ul>
+            <li>18,079 records · 40 crop classes</li>
+            <li id="method-acc">93.6% test accuracy</li>
+            <li>5-fold cross-validated</li>
+            <li>Features: N, P, K, pH, rainfall, temperature</li>
+          </ul>
+        </div>
+        <div class="method-card">
+          <h3>Yield Forecasting</h3>
+          <p class="method-model">XGBoost Regressor</p>
+          <ul>
+            <li>10,000 records · 6 major crops</li>
+            <li id="method-r2">R² = 0.998 on test set</li>
+            <li>19 input features incl. region, irrigation, fertilizer</li>
+            <li>Pipeline: scaling + one-hot encoding</li>
+          </ul>
+        </div>
+      </div>
+      <p class="method-note">Built by Katiki Ramarao · Final-year AI/ML, Malla Reddy University</p>
+    </div>
+  </section>
+
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>

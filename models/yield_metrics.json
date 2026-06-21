@@ -1,0 +1,76 @@
+{
+  "mae": 0.8410832618808747,
+  "rmse": 1.0547446383405203,
+  "r2": 0.9980913896456418,
+  "cv_r2_mean": 0.9980246929506882,
+  "cv_r2_std": 6.569495795995584e-05,
+  "feature_importance_top10": {
+    "Crop_Type_Sugarcane": 0.7769291400909424,
+    "Crop_Type_Potato": 0.09190061688423157,
+    "Crop_Type_Maize": 0.05215151607990265,
+    "Crop_Type_Rice": 0.043835993856191635,
+    "Crop_Type_Cotton": 0.027718059718608856,
+    "Crop_Type_Wheat": 0.006645191926509142,
+    "Fertilizer_Used": 0.00021803021081723273,
+    "Rainfall": 9.298722579842433e-05,
+    "Altitude": 7.168264710344374e-05,
+    "Sunlight_Hours": 4.55987683380954e-05
+  },
+  "numeric_cols": [
+    "N",
+    "P",
+    "K",
+    "Soil_pH",
+    "Soil_Moisture",
+    "Organic_Carbon",
+    "Temperature",
+    "Humidity",
+    "Rainfall",
+    "Sunlight_Hours",
+    "Wind_Speed",
+    "Altitude",
+    "Fertilizer_Used",
+    "Pesticide_Used"
+  ],
+  "categorical_cols": [
+    "Soil_Type",
+    "Region",
+    "Season",
+    "Crop_Type",
+    "Irrigation_Type"
+  ],
+  "categorical_options": {
+    "Soil_Type": [
+      "Clay",
+      "Loamy",
+      "Sandy",
+      "Silt"
+    ],
+    "Region": [
+      "Central",
+      "East",
+      "North",
+      "South",
+      "West"
+    ],
+    "Season": [
+      "Kharif",
+      "Rabi",
+      "Zaid"
+    ],
+    "Crop_Type": [
+      "Cotton",
+      "Maize",
+      "Potato",
+      "Rice",
+      "Sugarcane",
+      "Wheat"
+    ],
+    "Irrigation_Type": [
+      "Canal",
+      "Drip",
+      "Rainfed",
+      "Sprinkler"
+    ]
+  }
+}
