@@ -5,8 +5,7 @@
 // ⚠️ IMPORTANT: After deploying the backend on Render, replace the URL below
 // with your live Render URL, e.g. "https://annadata-backend.onrender.com/api"
 // Keep it as localhost while testing on your own machine.
-const API_BASE = "http://localhost:5000/api";
-
+const API_BASE = "https://crop-advisor-ztc8.onrender.com/api";
 let metadata = null;
 let selectedCrop = null;
 let lastRecommendations = [];
